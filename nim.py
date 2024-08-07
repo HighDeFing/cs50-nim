@@ -101,7 +101,21 @@ class NimAI():
         Return the Q-value for the state `state` and the action `action`.
         If no Q-value exists yet in `self.q`, return 0.
         """
-        print(state, action)
+        #print(self.q)
+        #print(state, action)
+        #print(tuple(state))
+
+        #state = tuple(state)
+        #self.q[state, action] = -3
+        if len(self.q) == 0:
+            return 0
+        else:
+            # check every key in self.q.keys this are ((state), (value)) where state and value are both tuples
+            # so we check if the first part is the same or the second part is the same
+            for key in self.q.keys():
+                if key[0] == state and key[1] == action:
+                    return self.q[key]
+
 
         raise NotImplementedError
 
@@ -120,6 +134,15 @@ class NimAI():
         `alpha` is the learning rate, and `new value estimate`
         is the sum of the current reward and estimated future rewards.
         """
+
+        #state = tuple(state)
+        #print(state, action)
+        new_value_estimate = self.best_future_reward(state)
+
+
+        self.q[state, action] = old_q + self.alpha * (reward + new_value_estimate - old_q)
+        #self.q[state, action]
+
         raise NotImplementedError
 
     def best_future_reward(self, state):
@@ -132,6 +155,21 @@ class NimAI():
         Q-value in `self.q`. If there are no available actions in
         `state`, return 0.
         """
+        print(f"the best {state}")
+        x, y, z, w = state
+        print(x, y, z, w)
+
+        #action in X
+        q_value_x = -9999999
+        if x > 0:
+            aux_q_x = q_value_x
+            for x in range(0, x):
+                q_value_x = max(q_value_x, self.get_q_value(state, (0, x)))
+        else:
+            q_value_x = 0
+
+
+
         raise NotImplementedError
 
     def choose_action(self, state, epsilon=True):
@@ -149,7 +187,8 @@ class NimAI():
         If multiple actions have the same Q-value, any of those
         options is an acceptable return value.
         """
-        self.get_q_value(state, 0)
+        state = tuple(state)
+        self.update_q_value(state, (1, 2), self.get_q_value(state, (1, 2)), 0, 1)
 
         raise NotImplementedError
 
