@@ -139,11 +139,11 @@ class NimAI():
         #print(state, action)
         new_value_estimate = self.best_future_reward(state)
 
-
+        #print(old_q + self.alpha * (reward + new_value_estimate - old_q))
         self.q[state, action] = old_q + self.alpha * (reward + new_value_estimate - old_q)
         #self.q[state, action]
 
-        raise NotImplementedError
+        #raise NotImplementedError
 
     def best_future_reward(self, state):
         """
@@ -155,18 +155,43 @@ class NimAI():
         Q-value in `self.q`. If there are no available actions in
         `state`, return 0.
         """
-        print(f"the best {state}")
+        #print(f"the best {state}")
         x, y, z, w = state
-        print(x, y, z, w)
+        #print(x, y, z, w)
 
         #action in X
         q_value_x = -9999999
+        q_value_y = -9999999
+        q_value_z = -9999999
+        q_value_w = -9999999
         if x > 0:
             aux_q_x = q_value_x
             for x in range(0, x):
                 q_value_x = max(q_value_x, self.get_q_value(state, (0, x)))
         else:
             q_value_x = 0
+        if y > 0:
+            aux_q_y = q_value_y
+            for y in range(0, y):
+                q_value_y = max(q_value_y, self.get_q_value(state, (1, y)))
+        else:
+            q_value_y = 0
+        if z > 0:
+            aux_q_z = q_value_z
+            for z in range(0, z):
+                q_value_z = max(q_value_z, self.get_q_value(state, (2, z)))
+        else:
+            q_value_z = 0
+        if w > 0:
+            aux_q_w = q_value_w
+            for w in range(0, w):
+                q_value_w = max(q_value_w, self.get_q_value(state, (3, w)))
+        else:
+            q_value_w = 0
+
+        #print('the max is:', max(q_value_x, q_value_y, q_value_z, q_value_w))
+        return max(q_value_x, q_value_y, q_value_z, q_value_w)
+
 
 
 
@@ -188,7 +213,19 @@ class NimAI():
         options is an acceptable return value.
         """
         state = tuple(state)
-        self.update_q_value(state, (1, 2), self.get_q_value(state, (1, 2)), 0, 1)
+        if epsilon == False:
+            print(self.q)
+            for key, value in self.q.items():
+                second_value = key[1]
+                print(second_value)
+        if epsilon == True:
+            print(self.q)
+
+
+
+        print(state)
+        state = tuple(state)
+        self.update_q_value(state, (1, 2), self.get_q_value(state, (1, 2)), 1, 1)
 
         raise NotImplementedError
 
