@@ -105,8 +105,10 @@ class NimAI():
         #print(state, action)
         #print(tuple(state))
 
-        #state = tuple(state)
+        state = tuple(state)
+        #print(state, action)
         #self.q[state, action] = -3
+
         if len(self.q) == 0:
             return 0
         else:
@@ -114,10 +116,15 @@ class NimAI():
             # so we check if the first part is the same or the second part is the same
             for key in self.q.keys():
                 if key[0] == state and key[1] == action:
-                    return self.q[key]
+                    if self.q[key] == None:
+                        #print(f"key: {self.q[key]}")
+                        return 0
+                    else:
+                        return self.q[key]
+        return 0
 
 
-        raise NotImplementedError
+        #raise NotImplementedError
 
     def update_q_value(self, state, action, old_q, reward, future_rewards):
         """
@@ -135,12 +142,12 @@ class NimAI():
         is the sum of the current reward and estimated future rewards.
         """
 
-        #state = tuple(state)
+        state = tuple(state)
         #print(state, action)
-        new_value_estimate = self.best_future_reward(state)
+        new_value_estimate = reward + future_rewards
 
         #print(old_q + self.alpha * (reward + new_value_estimate - old_q))
-        self.q[state, action] = old_q + self.alpha * (reward + new_value_estimate - old_q)
+        self.q[state, action] = old_q + self.alpha * (new_value_estimate - old_q)
         #self.q[state, action]
 
         #raise NotImplementedError
@@ -165,27 +172,24 @@ class NimAI():
         q_value_z = -9999999
         q_value_w = -9999999
         if x > 0:
-            aux_q_x = q_value_x
-            for x in range(0, x):
-                q_value_x = max(q_value_x, self.get_q_value(state, (0, x)))
+            for x_in in range(0, x):
+                q_value_x = max(q_value_x, self.get_q_value(state, (0, x_in)))
         else:
             q_value_x = 0
         if y > 0:
-            aux_q_y = q_value_y
-            for y in range(0, y):
-                q_value_y = max(q_value_y, self.get_q_value(state, (1, y)))
+            for y_in in range(0, y):
+                #print(f"this: {self.get_q_value(state, (1, y_in))}")
+                q_value_y = max(q_value_y, self.get_q_value(state, (1, y_in)))
         else:
             q_value_y = 0
         if z > 0:
-            aux_q_z = q_value_z
-            for z in range(0, z):
-                q_value_z = max(q_value_z, self.get_q_value(state, (2, z)))
+            for z_in in range(0, z):
+                q_value_z = max(q_value_z, self.get_q_value(state, (2, z_in)))
         else:
             q_value_z = 0
         if w > 0:
-            aux_q_w = q_value_w
-            for w in range(0, w):
-                q_value_w = max(q_value_w, self.get_q_value(state, (3, w)))
+            for w_in in range(0, w):
+                q_value_w = max(q_value_w, self.get_q_value(state, (3, w_in)))
         else:
             q_value_w = 0
 
@@ -212,20 +216,69 @@ class NimAI():
         If multiple actions have the same Q-value, any of those
         options is an acceptable return value.
         """
+        #state = [0, 0, 3, 2]
         state = tuple(state)
+        x, y, z, w = state
+        #print(f"state {state}")
+
+        if len(self.q) == 0:
+            for x_in in range(0, x+1):
+                for y_in in range(0, y+1):
+                    for z_in in range(0, z+1):
+                        for w_in in range(0, w+1):
+                            if x_in != 0:
+                                for t in range(1, x+1):
+                                    self.q[(x_in, y_in, z_in, w_in), (0, t)] = 0
+                            if y_in != 0:
+                                for t in range(1, y + 1):
+                                    self.q[(x_in, y_in, z_in, w_in), (1, t)] = 0
+                            if z_in != 0:
+                                for t in range(1, z+1):
+                                    self.q[(x_in, y_in, z_in, w_in), (2, t)] = 0
+                            if w_in != 0:
+                                for t in range(1, w + 1):
+                                    self.q[(x_in, y_in, z_in, w_in), (3, t)] = 0
+
+        max_value = -9999999
+        other_actions = []
+        best_action = ()
+        #print(self.q)
+        for key, value in self.q.items():
+            if key[0] == state:
+                if key[1][1] <= key[0][key[1][0]]:
+                    if value > max_value:
+                        best_action = key[1]
+                        max_value = self.q[key]
+                    else:
+                        if best_action != key[1]:
+                            other_actions.append(key[1])
+
+
+        #print(f"other_actions: {other_actions}")
+        #print(f"best_action: {best_action}")
+        #print(self.q)
         if epsilon == False:
-            print(self.q)
-            for key, value in self.q.items():
-                second_value = key[1]
-                print(second_value)
+            return best_action
         if epsilon == True:
-            print(self.q)
+            all_actions = [best_action] + other_actions
+            weights = [1-self.epsilon]
+            for w in other_actions:
+                weights.append(self.epsilon/len(other_actions))
+            #print(f"weights: {weights}")
+            #print(f"all_actions: {all_actions}")
+            chosen_action = random.choices(all_actions, weights=weights)[0]
+            return chosen_action
 
 
 
-        print(state)
-        state = tuple(state)
-        self.update_q_value(state, (1, 2), self.get_q_value(state, (1, 2)), 1, 1)
+
+        #epsilon = False
+
+
+
+        #print(state)
+        #state = tuple(state)
+        #self.update_q_value(state, (1, 2), self.get_q_value(state, (1, 2)), 1, 1)
 
         raise NotImplementedError
 
