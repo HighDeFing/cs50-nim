@@ -145,6 +145,7 @@ class NimAI():
         state = tuple(state)
         #print(state, action)
         new_value_estimate = reward + future_rewards
+        #print(old_q)
 
         #print(old_q + self.alpha * (reward + new_value_estimate - old_q))
         self.q[state, action] = old_q + self.alpha * (new_value_estimate - old_q)
@@ -163,38 +164,22 @@ class NimAI():
         `state`, return 0.
         """
         #print(f"the best {state}")
-        x, y, z, w = state
+        state = tuple(state)
+        #x, y, z, w = state
         #print(x, y, z, w)
 
-        #action in X
-        q_value_x = -9999999
-        q_value_y = -9999999
-        q_value_z = -9999999
-        q_value_w = -9999999
-        if x > 0:
-            for x_in in range(0, x):
-                q_value_x = max(q_value_x, self.get_q_value(state, (0, x_in)))
-        else:
-            q_value_x = 0
-        if y > 0:
-            for y_in in range(0, y):
-                #print(f"this: {self.get_q_value(state, (1, y_in))}")
-                q_value_y = max(q_value_y, self.get_q_value(state, (1, y_in)))
-        else:
-            q_value_y = 0
-        if z > 0:
-            for z_in in range(0, z):
-                q_value_z = max(q_value_z, self.get_q_value(state, (2, z_in)))
-        else:
-            q_value_z = 0
-        if w > 0:
-            for w_in in range(0, w):
-                q_value_w = max(q_value_w, self.get_q_value(state, (3, w_in)))
-        else:
-            q_value_w = 0
+        max_value = 0
+        other_actions = []
+        best_action = ()
+        # print(self.q)
+        for key, value in self.q.items():
+            if key[0] == state:
+                if key[1][1] <= key[0][key[1][0]]:
+                    if value >= max_value:
+                        max_value = self.q[key]
 
         #print('the max is:', max(q_value_x, q_value_y, q_value_z, q_value_w))
-        return max(q_value_x, q_value_y, q_value_z, q_value_w)
+        return max_value
 
 
 
